@@ -1,25 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>family request</title>
+  <title>family request system</title>
 </head>
 
 <body>
 
-<h2>bikin request</h2>
+<h2>family request</h2>
 
+<input id="name" placeholder="nama kamu"><br>
 <input id="item" placeholder="nama barang"><br>
 <input id="price" placeholder="harga"><br>
-<input id="time" placeholder="jam"><br>
+<input id="time" placeholder="jam dibutuhkan"><br>
 
-<button id="btn">kirim</button>
+<button id="btn">kirim request</button>
 
 <h2>list request</h2>
 <ul id="list"></ul>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // FIREBASE CONFIG
 const firebaseConfig = {
@@ -31,59 +39,72 @@ const firebaseConfig = {
   appId: "1:912432447079:web:6957682d59365ae8151ec2"
 };
 
-// INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-console.log("firebase connect ready");
+console.log("family system ready");
 
 // AMBIL DATA
 async function getRequests() {
-  try {
-    const querySnapshot = await getDocs(collection(db, "requests"));
-    const list = document.getElementById("list");
+  const querySnapshot = await getDocs(collection(db, "requests"));
+  const list = document.getElementById("list");
 
-    list.innerHTML = "";
+  list.innerHTML = "";
 
-    console.log("jumlah data:", querySnapshot.size);
+  querySnapshot.forEach((docSnap) => {
+    const r = docSnap.data();
 
-    querySnapshot.forEach((doc) => {
-      const r = doc.data();
-      const li = document.createElement("li");
-      li.innerText = `${r.item} - ${r.price} - ${r.time}`;
-      list.appendChild(li);
-    });
+    const li = document.createElement("li");
 
-  } catch (e) {
-    console.error("GET ERROR:", e);
-  }
+    li.innerHTML = `
+      <b>${r.name}</b> minta: ${r.item} - ${r.price} - ${r.time} <br>
+      status: <b>${r.status}</b> <br>
+
+      <button onclick="updateStatus('${docSnap.id}', 'bisa')">bisa</button>
+      <button onclick="updateStatus('${docSnap.id}', 'gabisa')">gabisa</button>
+      <button onclick="updateStatus('${docSnap.id}', 'selesai')">selesai</button>
+      <hr>
+    `;
+
+    list.appendChild(li);
+  });
 }
 
-// TAMBAH DATA
+// TAMBAH REQUEST
 async function addRequest() {
-  console.log("klik jalan");
-
+  const name = document.getElementById("name").value;
   const item = document.getElementById("item").value;
   const price = document.getElementById("price").value;
   const time = document.getElementById("time").value;
 
-  try {
-    const docRef = await addDoc(collection(db, "requests"), {
-      item,
-      price,
-      time
-    });
-
-    console.log("BERHASIL SIMPAN:", docRef.id);
-
-    await getRequests(); // refresh list
-
-  } catch (e) {
-    console.error("FIREBASE ERROR:", e);
+  if (!name || !item) {
+    alert("isi nama & barang dulu");
+    return;
   }
+
+  await addDoc(collection(db, "requests"), {
+    name,
+    item,
+    price,
+    time,
+    status: "pending"
+  });
+
+  getRequests();
 }
 
-// EVENT BUTTON
+// UPDATE STATUS
+window.updateStatus = async (id, newStatus) => {
+  const ref = doc(db, "requests", id);
+
+  await updateDoc(ref, {
+    status: newStatus
+  });
+
+  getRequests();
+};
+
+// BUTTON
 document.getElementById("btn").addEventListener("click", addRequest);
 
 // LOAD AWAL
