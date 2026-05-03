@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>family request</title>
+</head>
+
+<body>
+
+    <h2>bikin request</h2>
+
+    <input id="item" placeholder="nama barang"><br>
+    <input id="price" placeholder="harga"><br>
+    <input id="time" placeholder="jam"><br>
+
+    <button onclick="addRequest()">kirim</button>
+
+    <h2>list request</h2>
+    <ul id="list"></ul>
+
+    <script>
+        let requests = [];
+
+        function render() {
+            const list = document.getElementById("list");
+            list.innerHTML = "";
+
+            requests.forEach(r => {
+                const li = document.createElement("li");
+                li.innerText = `${r.item} - ${r.price} - ${r.time}`;
+                list.appendChild(li);
+            });
+        }
+
+        function addRequest() {
+            const item = document.getElementById("item").value;
+            const price = document.getElementById("price").value;
+            const time = document.getElementById("time").value;
+
+            requests.push({ item, price, time });
+            render();
+        }
+
+        render();
+    </script>
+
+</body>
+
+</html>
