@@ -13,35 +13,74 @@
     <input id="price" placeholder="harga"><br>
     <input id="time" placeholder="jam"><br>
 
-    <button onclick="addRequest()">kirim</button>
+    <button id="btn">kirim</button>
 
     <h2>list request</h2>
     <ul id="list"></ul>
 
-    <script>
-        let requests = [];
+    <script type="module">
+        console.log("SCRIPT HIDUP");
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        function render() {
-            const list = document.getElementById("list");
-            list.innerHTML = "";
+        // CONFIG FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxI2pmlxDZNzR04cvAd8g3nfFdhBBC4Rg",
+            authDomain: "family-request-3dd29.firebaseapp.com",
+            projectId: "family-request-3dd29",
+            storageBucket: "family-request-3dd29.firebasestorage.app",
+            messagingSenderId: "912432447079",
+            appId: "1:912432447079:web:6957682d59365ae8151ec2"
+        };
 
-            requests.forEach(r => {
-                const li = document.createElement("li");
-                li.innerText = `${r.item} - ${r.price} - ${r.time}`;
-                list.appendChild(li);
-            });
+        // INIT
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        console.log("firebase connect:", db);
+
+        // AMBIL DATA
+        async function getRequests() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "requests"));
+                const list = document.getElementById("list");
+                list.innerHTML = "";
+
+                querySnapshot.forEach((doc) => {
+                    const r = doc.data();
+                    const li = document.createElement("li");
+                    li.innerText = `${r.item} - ${r.price} - ${r.time}`;
+                    list.appendChild(li);
+                });
+
+                console.log("data berhasil diambil");
+            } catch (e) {
+                console.error("ERROR GET:", e);
+            }
         }
 
-        function addRequest() {
-            const item = document.getElementById("item").value;
-            const price = document.getElementById("price").value;
-            const time = document.getElementById("time").value;
+        // TAMBAH DATA
+        async function addRequest() {
+                console.log("klik jalan");
 
-            requests.push({ item, price, time });
-            render();
-        }
+                try {
+                    await addDoc(collection(db, "requests"), {
+                        item: "TEST",
+                        price: "123",
+                        time: "NOW"
+                    });
 
-        render();
+                    console.log("MASUK FIREBASE");
+                } catch (e) {
+                    console.error("ERROR:", e);
+                }
+            }
+
+        // EVENT LISTENER (INI YANG FIX)
+        document.getElementById("btn").addEventListener("click", addRequest);
+
+        // LOAD AWAL
+        getRequests();
     </script>
 
 </body>
