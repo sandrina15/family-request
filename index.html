@@ -1,88 +1,94 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>family request</title>
+  <title>family request</title>
 </head>
 
 <body>
 
-    <h2>bikin request</h2>
+<h2>bikin request</h2>
 
-    <input id="item" placeholder="nama barang"><br>
-    <input id="price" placeholder="harga"><br>
-    <input id="time" placeholder="jam"><br>
+<input id="item" placeholder="nama barang"><br>
+<input id="price" placeholder="harga"><br>
+<input id="time" placeholder="jam"><br>
 
-    <button id="btn">kirim</button>
+<button id="btn">kirim</button>
 
-    <h2>list request</h2>
-    <ul id="list"></ul>
+<h2>list request</h2>
+<ul id="list"></ul>
 
-    <script type="module">
-        console.log("SCRIPT HIDUP");
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // CONFIG FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyDxI2pmlxDZNzR04cvAd8g3nfFdhBBC4Rg",
-            authDomain: "family-request-3dd29.firebaseapp.com",
-            projectId: "family-request-3dd29",
-            storageBucket: "family-request-3dd29.firebasestorage.app",
-            messagingSenderId: "912432447079",
-            appId: "1:912432447079:web:6957682d59365ae8151ec2"
-        };
+// FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyDxI2pmlxDZNzR04cvAd8g3nfFdhBBC4Rg",
+  authDomain: "family-request-3dd29.firebaseapp.com",
+  projectId: "family-request-3dd29",
+  storageBucket: "family-request-3dd29.firebasestorage.app",
+  messagingSenderId: "912432447079",
+  appId: "1:912432447079:web:6957682d59365ae8151ec2"
+};
 
-        // INIT
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+// INIT
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        console.log("firebase connect:", db);
+console.log("firebase connect ready");
 
-        // AMBIL DATA
-        async function getRequests() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "requests"));
-                const list = document.getElementById("list");
-                list.innerHTML = "";
+// AMBIL DATA
+async function getRequests() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "requests"));
+    const list = document.getElementById("list");
 
-                querySnapshot.forEach((doc) => {
-                    const r = doc.data();
-                    const li = document.createElement("li");
-                    li.innerText = `${r.item} - ${r.price} - ${r.time}`;
-                    list.appendChild(li);
-                });
+    list.innerHTML = "";
 
-                console.log("data berhasil diambil");
-            } catch (e) {
-                console.error("ERROR GET:", e);
-            }
-        }
+    console.log("jumlah data:", querySnapshot.size);
 
-        // TAMBAH DATA
-        async function addRequest() {
-                console.log("klik jalan");
+    querySnapshot.forEach((doc) => {
+      const r = doc.data();
+      const li = document.createElement("li");
+      li.innerText = `${r.item} - ${r.price} - ${r.time}`;
+      list.appendChild(li);
+    });
 
-                try {
-                    await addDoc(collection(db, "requests"), {
-                        item: "TEST",
-                        price: "123",
-                        time: "NOW"
-                    });
+  } catch (e) {
+    console.error("GET ERROR:", e);
+  }
+}
 
-                    console.log("MASUK FIREBASE");
-                } catch (e) {
-                    console.error("ERROR:", e);
-                }
-            }
+// TAMBAH DATA
+async function addRequest() {
+  console.log("klik jalan");
 
-        // EVENT LISTENER (INI YANG FIX)
-        document.getElementById("btn").addEventListener("click", addRequest);
+  const item = document.getElementById("item").value;
+  const price = document.getElementById("price").value;
+  const time = document.getElementById("time").value;
 
-        // LOAD AWAL
-        getRequests();
-    </script>
+  try {
+    const docRef = await addDoc(collection(db, "requests"), {
+      item,
+      price,
+      time
+    });
+
+    console.log("BERHASIL SIMPAN:", docRef.id);
+
+    await getRequests(); // refresh list
+
+  } catch (e) {
+    console.error("FIREBASE ERROR:", e);
+  }
+}
+
+// EVENT BUTTON
+document.getElementById("btn").addEventListener("click", addRequest);
+
+// LOAD AWAL
+getRequests();
+</script>
 
 </body>
-
 </html>
